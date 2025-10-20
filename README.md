@@ -1,4 +1,4 @@
-# 🚀 K6 Performance Testing - Desafio Técnico GFT
+# 🚀 K6 Performance Testing - Desafio Técnico  
 
 [![K6 Tests](https://github.com/valterteodorobsi/k6Demo/actions/workflows/k6-tests.yml/badge.svg)](https://github.com/valterteodorobsi/k6Demo/actions/workflows/k6-tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,7 +9,7 @@
 
 ## 📋 Sobre o Projeto
 
-Este projeto foi desenvolvido como parte do **Desafio Técnico GFT** para demonstrar experiência com testes de performance e ferramentas de carga.
+Este projeto foi desenvolvido como parte do **Desafio Técnico  ** para demonstrar experiência com testes de performance e ferramentas de carga.
 
 ### 🎯 Objetivos Cumpridos
 
@@ -205,7 +205,7 @@ O relatório Allure mostra:
 - 🎯 Percentual de checks que passaram
 - 📊 Distribuição de tempos de resposta
 
-**Veja o guia completo em:** [ALLURE-GUIDE.md](ALLURE-GUIDE.md)
+
 
 ---
 
