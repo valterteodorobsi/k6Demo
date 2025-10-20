@@ -1,7 +1,7 @@
 // Configuração centralizada para testes K6 basicas
 export const config = {
   // URLs da API
-  baseURL: __ENV.API_BASE_URL || 'http://localhost:8080',
+  baseURL: __ENV.API_BASE_URL || 'https://api-mobile-alfj.onrender.com',
   
   // Credenciais
   admin: {
