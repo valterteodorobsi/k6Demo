@@ -152,6 +152,22 @@ k6 run -e API_BASE_URL=https://api.exemplo.com scenarios/challenge.test.js
 
 ## 🔄 CI/CD Pipeline (GitHub Actions)
 
+### Configurar Secrets do Repositório
+
+⚠️ **IMPORTANTE:** O pipeline requer configuração de secrets para funcionar.
+
+1. Acesse: `https://github.com/valterteodorobsi/k6Demo/settings/secrets/actions`
+2. Clique em **"New repository secret"**
+3. Adicione os seguintes secrets:
+
+| Secret | Exemplo | Descrição |
+|--------|---------|-----------|
+| `API_BASE_URL` | `https://sua-api.com` | URL base da API a ser testada |
+| `ADMIN_EMAIL` | `admin@teste.com` | Email do usuário admin |
+| `ADMIN_PASSWORD` | `Admin123` | Senha do usuário admin |
+
+**Nota:** Se as secrets não estiverem configuradas, o pipeline será pulado automaticamente.
+
 ### Execução Automática
 
 O pipeline executa automaticamente nos seguintes eventos:

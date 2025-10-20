@@ -34,10 +34,24 @@ jobs:
 
       - name: 🚀 Run K6 Challenge Test (500 VUs x 5min)
         env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://jsonplaceholder.typicode.com' }}
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'admin@teste.com' }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'Admin123' }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
+          # Verifica se a API_BASE_URL está configurada
+          if [ -z "$API_BASE_URL" ]; then
+            echo "⚠️ API_BASE_URL não configurada. Configure as secrets do repositório:"
+            echo "   Settings → Secrets and variables → Actions → New repository secret"
+            echo ""
+            echo "Secrets necessários:"
+            echo "  - API_BASE_URL: URL base da API (ex: https://sua-api.com)"
+            echo "  - ADMIN_EMAIL: Email do admin (ex: admin@teste.com)"
+            echo "  - ADMIN_PASSWORD: Senha do admin"
+            echo ""
+            echo "ℹ️ Pulando execução do teste..."
+            exit 0
+          fi
+          
           k6 run \
             --out json=results/challenge-results.json \
             --summary-export=results/summary.json \
@@ -52,7 +66,7 @@ jobs:
           echo "- **Scenario:** Challenge Test" >> $GITHUB_STEP_SUMMARY
           echo "- **Virtual Users:** 500 simultaneous" >> $GITHUB_STEP_SUMMARY
           echo "- **Duration:** 5 minutes (+ 2min ramp up/down)" >> $GITHUB_STEP_SUMMARY
-          echo "- **API:** ${{ secrets.API_BASE_URL || 'https://jsonplaceholder.typicode.com' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API:** Configured via secrets" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ -f results/summary.json ]; then
