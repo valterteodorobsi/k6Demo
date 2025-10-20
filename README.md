@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Projeto completo de testes de performance usando K6 para avaliar capacidade e identificar gargalos em APIs REST.
+ Vale resaltar que a Api de testes esta publicada em um hoste Free, e pode ter intermitencias, ao rodar local deu mais taixa de sucesso..
 
 ---
 

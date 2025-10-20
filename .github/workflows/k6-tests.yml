@@ -45,19 +45,6 @@ jobs:
           echo "ADMIN_PASSWORD configurado: $( [ -n "$ADMIN_PASSWORD" ] && echo "✅ Sim" || echo "❌ Não" )"
           echo ""
           
-          # Verifica se a API_BASE_URL está configurada
-          if [ -z "$API_BASE_URL" ]; then
-            echo "⚠️ API_BASE_URL não configurada. Configure as secrets do repositório:"
-            echo "   Settings → Secrets and variables → Actions → New repository secret"
-            echo ""
-            echo "Secrets necessários:"
-            echo "  - API_BASE_URL: URL base da API (ex: https://sua-api.com)"
-            echo "  - ADMIN_EMAIL: Email do admin (ex: admin@teste.com)"
-            echo "  - ADMIN_PASSWORD: Senha do admin"
-            echo ""
-            echo "ℹ️ Pulando execução do teste..."
-            exit 0
-          fi
           
           echo "🚀 Iniciando teste K6 contra a API configurada..."
           echo ""
