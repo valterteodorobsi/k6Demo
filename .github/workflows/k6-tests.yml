@@ -1,0 +1,139 @@
+name: K6 Performance Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 2 * * *'  # Diariamente às 2h UTC (23h horário de Brasília)
+  workflow_dispatch:      # Permite execução manual
+
+jobs:
+  k6-load-test:
+    name: K6 Challenge Test - 500 VUs
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Install K6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: ✅ Verify K6 installation
+        run: k6 version
+
+      - name: 📋 Create results directory
+        run: mkdir -p results
+
+      - name: 🚀 Run K6 Challenge Test (500 VUs x 5min)
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://jsonplaceholder.typicode.com' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'admin@teste.com' }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'Admin123' }}
+        run: |
+          k6 run \
+            --out json=results/challenge-results.json \
+            --summary-export=results/summary.json \
+            scenarios/challenge.test.js
+
+      - name: 📊 Generate Summary
+        if: always()
+        run: |
+          echo "# 📊 K6 Performance Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Test Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scenario:** Challenge Test" >> $GITHUB_STEP_SUMMARY
+          echo "- **Virtual Users:** 500 simultaneous" >> $GITHUB_STEP_SUMMARY
+          echo "- **Duration:** 5 minutes (+ 2min ramp up/down)" >> $GITHUB_STEP_SUMMARY
+          echo "- **API:** ${{ secrets.API_BASE_URL || 'https://jsonplaceholder.typicode.com' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f results/summary.json ]; then
+            echo "## 📈 Key Metrics" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+            cat results/summary.json | jq '.metrics' >> $GITHUB_STEP_SUMMARY || echo "Metrics not available" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Summary file not generated" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 📦 Upload K6 Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results-${{ github.run_number }}
+          path: |
+            results/*.json
+          retention-days: 30
+
+      - name: 💬 Comment PR with Results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 🚀 K6 Performance Test Results\n\n';
+            comment += '**Test:** Challenge Test (500 VUs x 5 minutes)\n\n';
+            
+            try {
+              const summary = JSON.parse(fs.readFileSync('results/summary.json', 'utf8'));
+              const metrics = summary.metrics;
+              
+              comment += '### 📊 Key Metrics\n\n';
+              comment += '| Metric | Value |\n';
+              comment += '|--------|-------|\n';
+              
+              if (metrics.http_req_duration) {
+                comment += `| Response Time (p95) | ${metrics.http_req_duration.values['p(95)'].toFixed(2)}ms |\n`;
+                comment += `| Response Time (p99) | ${metrics.http_req_duration.values['p(99)'].toFixed(2)}ms |\n`;
+              }
+              
+              if (metrics.http_req_failed) {
+                const failRate = (metrics.http_req_failed.values.rate * 100).toFixed(2);
+                comment += `| Error Rate | ${failRate}% |\n`;
+              }
+              
+              if (metrics.checks) {
+                const passRate = (metrics.checks.values.rate * 100).toFixed(2);
+                comment += `| Checks Passed | ${passRate}% |\n`;
+              }
+              
+              if (metrics.http_reqs) {
+                comment += `| Throughput | ${metrics.http_reqs.values.rate.toFixed(2)} req/s |\n`;
+              }
+              
+              comment += '\n';
+              comment += '### 🎯 Thresholds\n\n';
+              
+              const thresholds = summary.root_group.checks || [];
+              thresholds.forEach(check => {
+                const icon = check.passes > 0 ? '✅' : '❌';
+                comment += `${icon} ${check.name}\n`;
+              });
+              
+            } catch (error) {
+              comment += '⚠️ Could not parse test results\n';
+              comment += `Error: ${error.message}\n`;
+            }
+            
+            comment += '\n📦 Full results available in artifacts.';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: ❌ Fail if thresholds not met
+        if: failure()
+        run: |
+          echo "::error::K6 test failed - check thresholds and error rate"
+          exit 1

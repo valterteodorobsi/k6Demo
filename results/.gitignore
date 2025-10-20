@@ -1,0 +1,9 @@
+# K6 Performance Tests - Ignore results
+*.json
+*.html
+*.xml
+*.csv
+*.log
+
+# Except README
+!README.md
