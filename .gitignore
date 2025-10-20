@@ -2,6 +2,8 @@
 results/*.json
 results/*.csv
 results/*.html
+results/allure-results/
+results/allure-report/
 !results/.gitkeep
 
 # Node modules (se usar npm para alguma coisa)
