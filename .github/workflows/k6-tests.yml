@@ -38,6 +38,13 @@ jobs:
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
+          # Debug: mostrar se secrets estão configuradas (sem expor valores)
+          echo "🔍 Verificando configuração..."
+          echo "API_BASE_URL configurada: $( [ -n "$API_BASE_URL" ] && echo "✅ Sim" || echo "❌ Não" )"
+          echo "ADMIN_EMAIL configurado: $( [ -n "$ADMIN_EMAIL" ] && echo "✅ Sim" || echo "❌ Não" )"
+          echo "ADMIN_PASSWORD configurado: $( [ -n "$ADMIN_PASSWORD" ] && echo "✅ Sim" || echo "❌ Não" )"
+          echo ""
+          
           # Verifica se a API_BASE_URL está configurada
           if [ -z "$API_BASE_URL" ]; then
             echo "⚠️ API_BASE_URL não configurada. Configure as secrets do repositório:"
@@ -51,6 +58,9 @@ jobs:
             echo "ℹ️ Pulando execução do teste..."
             exit 0
           fi
+          
+          echo "🚀 Iniciando teste K6 contra a API configurada..."
+          echo ""
           
           k6 run \
             --out json=results/challenge-results.json \
